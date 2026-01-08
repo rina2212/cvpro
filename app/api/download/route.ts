@@ -24,4 +24,15 @@ export async function GET(req: Request) {
       );
     }
 
-    return NextRe
+    return NextResponse.json({
+      success: true,
+      downloadUrl: "/pdf/lebenslauf-premium.pdf",
+    });
+  } catch (error) {
+    console.error("Stripe Download Error:", error);
+    return NextResponse.json(
+      { error: "Download nicht erlaubt" },
+      { status: 500 }
+    );
+  }
+}
