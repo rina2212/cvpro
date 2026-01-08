@@ -1,8 +1,7 @@
 import Stripe from "stripe";
+import { NextResponse } from "next/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2022-11-15",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST() {
   try {
@@ -11,18 +10,26 @@ export async function POST() {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price_data: {
+            currency: "eur",
+            product_data: {
+              name: "CVPro – Lebenslauf als PDF",
+              description: "Professioneller Lebenslauf als PDF herunterladen",
+            },
+            unit_amount: 499, // 4,99 €
+          },
           quantity: 1,
         },
       ],
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/generator`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err) {
+  } catch (error) {
+    console.error("Stripe Checkout Error:", error);
     return NextResponse.json(
-      { error: "Stripe Checkout failed" },
+      { error: "Checkout konnte nicht gestartet werden." },
       { status: 500 }
     );
   }
