@@ -2,47 +2,45 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 
 export async function POST(req: Request) {
-  const { name, job, profile } = await req.json();
+  try {
+    const { content } = await req.json();
 
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595, 842]); // A4
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595, 842]); // A4
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  let y = 800;
+    const fontSize = 12;
+    const margin = 50;
+    let y = page.getHeight() - margin;
 
-  page.drawText(name || "Name", {
-    x: 50,
-    y,
-    size: 20,
-    font,
-  });
+    const lines = content.split("\n");
 
-  y -= 30;
+    for (const line of lines) {
+      page.drawText(line, {
+        x: margin,
+        y,
+        size: fontSize,
+        font,
+      });
+      y -= fontSize + 6;
+    }
 
-  page.drawText(job || "Berufsbezeichnung", {
-    x: 50,
-    y,
-    size: 14,
-    font,
-  });
+    const pdfBytes = await pdfDoc.save();
 
-  y -= 40;
+    // 🔑 DER WICHTIGE FIX
+    const buffer = Buffer.from(pdfBytes);
 
-  page.drawText(profile || "Kurzprofil", {
-    x: 50,
-    y,
-    size: 12,
-    font,
-    maxWidth: 500,
-    lineHeight: 14,
-  });
-
-  const pdfBytes = await pdfDoc.save();
-
-  return new NextResponse(pdfBytes, {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": "attachment; filename=lebenslauf.pdf",
-    },
-  });
+    return new NextResponse(buffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": 'attachment; filename="lebenslauf.pdf"',
+      },
+    });
+  } catch (error) {
+    console.error("PDF Fehler:", error);
+    return NextResponse.json(
+      { error: "PDF konnte nicht erstellt werden" },
+      { status: 500 }
+    );
+  }
 }
