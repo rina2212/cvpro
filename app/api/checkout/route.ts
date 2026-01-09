@@ -34,4 +34,8 @@ export async function POST() {
       },
     ],
     success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/
+    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/generator`,
+  });
+
+  return NextResponse.json({ url: session.url });
+}
