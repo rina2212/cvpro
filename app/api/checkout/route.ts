@@ -24,12 +24,4 @@ export async function POST() {
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/generator`,
     });
 
-    return NextResponse.json({ url: session.url });
-  } catch (error) {
-    console.error('Stripe Checkout Error:', error);
-    return NextResponse.json(
-      { error: 'Checkout konnte nicht erstellt werden' },
-      { status: 500 }
-    );
-  }
-}
+    return NextResponse.json({
