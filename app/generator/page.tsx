@@ -7,21 +7,29 @@ export default function GeneratorPage() {
         method: 'POST',
       });
 
+      if (!res.ok) {
+        const text = await res.text();
+        alert('Server-Fehler:\n' + text);
+        return;
+      }
+
       const data = await res.json();
 
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Checkout konnte nicht gestartet werden.');
+      if (!data.url) {
+        alert('Keine Checkout-URL vom Server erhalten.');
+        return;
       }
+
+      window.location.href = data.url;
     } catch (error) {
       alert('Fehler beim Start des Checkouts.');
+      console.error(error);
     }
   };
 
   return (
     <main className="generator-page">
-      {/* Logo / Marke */}
+      {/* Marke */}
       <div className="brand-headline">
         <span className="brand-mark">CV</span>Pro
       </div>
@@ -80,7 +88,9 @@ export default function GeneratorPage() {
             <textarea placeholder="Kurzprofil" />
           </div>
 
-          <button type="button">Kurzprofil neu generieren</button>
+          <button type="button">
+            Kurzprofil neu generieren
+          </button>
 
           <h2>Kenntnisse</h2>
 
@@ -88,7 +98,9 @@ export default function GeneratorPage() {
             <textarea placeholder="Kenntnisse" />
           </div>
 
-          <button type="button">Neue Skill-Variante</button>
+          <button type="button">
+            Neue Skill-Variante
+          </button>
 
           <h2>Berufserfahrung</h2>
 
@@ -96,7 +108,9 @@ export default function GeneratorPage() {
             <textarea placeholder="Berufserfahrung" />
           </div>
 
-          <button type="button">Neue Erfahrungs-Variante</button>
+          <button type="button">
+            Neue Erfahrungs-Variante
+          </button>
 
           <h2>Ausbildung</h2>
 
@@ -104,7 +118,9 @@ export default function GeneratorPage() {
             <textarea placeholder="Ausbildung" />
           </div>
 
-          <button type="button">Neue Ausbildungs-Variante</button>
+          <button type="button">
+            Neue Ausbildungs-Variante
+          </button>
 
           {/* PRIMARY CTA */}
           <div className="primary-cta">
