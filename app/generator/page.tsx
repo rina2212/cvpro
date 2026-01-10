@@ -1,154 +1,84 @@
 'use client';
 
+import { useState } from 'react';
+
 export default function GeneratorPage() {
+  const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
+  const [profile, setProfile] = useState('');
+  const [experience, setExperience] = useState('');
+  const [education, setEducation] = useState('');
+
   const handleCheckout = async () => {
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-      });
+    // 1. Formulardaten lokal speichern
+    const cvData = {
+      name,
+      title,
+      profile,
+      experience,
+      education,
+    };
 
-      if (!res.ok) {
-        const text = await res.text();
-        alert('Server-Fehler:\n' + text);
-        return;
-      }
+    localStorage.setItem('cv-data', JSON.stringify(cvData));
 
-      const data = await res.json();
+    // 2. Checkout starten
+    const res = await fetch('/api/checkout', { method: 'POST' });
+    const data = await res.json();
 
-      if (!data.url) {
-        alert('Keine Checkout-URL vom Server erhalten.');
-        return;
-      }
-
+    if (data.url) {
       window.location.href = data.url;
-    } catch (error) {
-      alert('Fehler beim Start des Checkouts.');
-      console.error(error);
+    } else {
+      alert('Checkout konnte nicht gestartet werden.');
     }
   };
 
   return (
     <main className="generator-page">
-      {/* Marke */}
-      <div className="brand-headline">
-        <span className="brand-mark">CV</span>Pro
-      </div>
-
       <h1>Lebenslauf Generator</h1>
-
-      {/* Schritt-Indikator */}
-      <div className="step-indicator">
-        <div className="step active">
-          <span className="step-dot" />
-          <span className="step-label">Persönliche Angaben</span>
-        </div>
-        <div className="step">
-          <span className="step-dot" />
-          <span className="step-label">Profil & Stil</span>
-        </div>
-        <div className="step">
-          <span className="step-dot" />
-          <span className="step-label">Erfahrung</span>
-        </div>
-        <div className="step">
-          <span className="step-dot" />
-          <span className="step-label">Ausbildung</span>
-        </div>
-        <div className="step">
-          <span className="step-dot" />
-          <span className="step-label">PDF</span>
-        </div>
-      </div>
 
       <div className="generator-layout">
         <form className="cv-form">
           <h2>Persönliche Angaben</h2>
 
-          <div className="field">
-            <input type="text" placeholder="Name" />
-          </div>
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-          <div className="field">
-            <input type="text" placeholder="Berufsbezeichnung" />
-          </div>
-
-          <h2>Stil</h2>
-
-          <div className="field">
-            <select>
-              <option>Neutral</option>
-              <option>Modern</option>
-              <option>Klassisch</option>
-            </select>
-          </div>
+          <input
+            type="text"
+            placeholder="Berufsbezeichnung"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
           <h2>Kurzprofil</h2>
-
-          <div className="field">
-            <textarea placeholder="Kurzprofil" />
-          </div>
-
-          <button type="button">
-            Kurzprofil neu generieren
-          </button>
-
-          <h2>Kenntnisse</h2>
-
-          <div className="field">
-            <textarea placeholder="Kenntnisse" />
-          </div>
-
-          <button type="button">
-            Neue Skill-Variante
-          </button>
+          <textarea
+            placeholder="Kurzprofil"
+            value={profile}
+            onChange={(e) => setProfile(e.target.value)}
+          />
 
           <h2>Berufserfahrung</h2>
-
-          <div className="field">
-            <textarea placeholder="Berufserfahrung" />
-          </div>
-
-          <button type="button">
-            Neue Erfahrungs-Variante
-          </button>
+          <textarea
+            placeholder="Berufserfahrung"
+            value={experience}
+            onChange={(e) => setExperience(e.target.value)}
+          />
 
           <h2>Ausbildung</h2>
+          <textarea
+            placeholder="Ausbildung"
+            value={education}
+            onChange={(e) => setEducation(e.target.value)}
+          />
 
-          <div className="field">
-            <textarea placeholder="Ausbildung" />
-          </div>
-
-          <button type="button">
-            Neue Ausbildungs-Variante
+          <button type="button" onClick={handleCheckout}>
+            PDF erstellen
           </button>
-
-          {/* PRIMARY CTA */}
-          <div className="primary-cta">
-            <button
-              type="button"
-              className="cta-button"
-              onClick={handleCheckout}
-            >
-              PDF erstellen
-            </button>
-
-            <p className="cta-hint">
-              Kostenlos testen · Download im nächsten Schritt
-            </p>
-          </div>
         </form>
-
-        {/* Vorschau */}
-        <aside className="preview-box">
-          <div className="preview-paper">
-            <div className="preview-name">Max Mustermann</div>
-            <div className="preview-title">Account Manager</div>
-          </div>
-
-          <p className="preview-hint">
-            Vorschau aktualisiert sich automatisch während der Eingabe.
-          </p>
-        </aside>
       </div>
     </main>
   );
