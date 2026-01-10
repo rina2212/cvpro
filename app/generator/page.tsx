@@ -1,87 +1,180 @@
 'use client';
 
-import { useState } from 'react';
-
 export default function GeneratorPage() {
-  const [name, setName] = useState('');
-  const [title, setTitle] = useState('');
-  const [profile, setProfile] = useState('');
-  const [experience, setExperience] = useState('');
-  const [education, setEducation] = useState('');
-
-  const [layout, setLayout] = useState('classic');
-  const [font, setFont] = useState('sans');
-  const [accent, setAccent] = useState('black');
-
   const handleCheckout = async () => {
-    const cvData = {
-      name,
-      title,
-      profile,
-      experience,
-      education,
-      layout,
-      font,
-      accent,
-    };
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+      });
 
-    localStorage.setItem('cv-data', JSON.stringify(cvData));
+      const data = await res.json();
 
-    const res = await fetch('/api/checkout', { method: 'POST' });
-    const data = await res.json();
-
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert('Checkout konnte nicht gestartet werden.');
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Checkout konnte nicht gestartet werden.');
+      }
+    } catch (error) {
+      alert('Fehler beim Start des Checkouts.');
     }
   };
 
   return (
     <main className="generator-page">
+      {/* Logo / Marke */}
+      <div className="brand-headline">
+        <span className="brand-mark">CV</span>Pro
+      </div>
+
       <h1>Lebenslauf Generator</h1>
 
-      <form className="cv-form">
-        <h2>Inhalt</h2>
+      {/* Schritt-Indikator */}
+      <div className="step-indicator">
+        <div className="step active">
+          <span className="step-dot" />
+          <span className="step-label">Persönliche Angaben</span>
+        </div>
+        <div className="step">
+          <span className="step-dot" />
+          <span className="step-label">Profil & Stil</span>
+        </div>
+        <div className="step">
+          <span className="step-dot" />
+          <span className="step-label">Erfahrung</span>
+        </div>
+        <div className="step">
+          <span className="step-dot" />
+          <span className="step-label">Ausbildung</span>
+        </div>
+        <div className="step">
+          <span className="step-dot" />
+          <span className="step-label">PDF</span>
+        </div>
+      </div>
 
-        <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="Berufsbezeichnung" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <div className="generator-layout">
+        <form className="cv-form">
+          <h2>Persönliche Angaben</h2>
 
-        <textarea placeholder="Kurzprofil" value={profile} onChange={(e) => setProfile(e.target.value)} />
-        <textarea placeholder="Berufserfahrung" value={experience} onChange={(e) => setExperience(e.target.value)} />
-        <textarea placeholder="Ausbildung" value={education} onChange={(e) => setEducation(e.target.value)} />
+          <div className="field">
+            <input type="text" placeholder="Name" />
+          </div>
 
-        <h2>Design</h2>
+          <div className="field">
+            <input type="text" placeholder="Berufsbezeichnung" />
+          </div>
 
-        <label>
-          Layout
-          <select value={layout} onChange={(e) => setLayout(e.target.value)}>
-            <option value="classic">Klassisch</option>
-            <option value="modern">Modern</option>
-          </select>
-        </label>
+          <h2>Stil</h2>
 
-        <label>
-          Schrift
-          <select value={font} onChange={(e) => setFont(e.target.value)}>
-            <option value="sans">Sans Serif</option>
-            <option value="serif">Serif</option>
-          </select>
-        </label>
+          <div className="field">
+            <select>
+              <option>Neutral</option>
+              <option>Modern</option>
+              <option>Klassisch</option>
+            </select>
+          </div>
 
-        <label>
-          Akzentfarbe
-          <select value={accent} onChange={(e) => setAccent(e.target.value)}>
-            <option value="black">Schwarz</option>
-            <option value="blue">Blau</option>
-            <option value="gray">Grau</option>
-          </select>
-        </label>
+          <h2>Kurzprofil</h2>
 
-        <button type="button" onClick={handleCheckout}>
-          PDF erstellen
-        </button>
-      </form>
+          <div className="field">
+            <textarea placeholder="Kurzprofil" />
+          </div>
+
+          <button type="button">Kurzprofil neu generieren</button>
+
+          <h2>Kenntnisse</h2>
+
+          <div className="field">
+            <textarea placeholder="Kenntnisse" />
+          </div>
+
+          <button type="button">Neue Skill-Variante</button>
+
+          <h2>Berufserfahrung</h2>
+
+          <div className="field">
+            <textarea placeholder="Berufserfahrung" />
+          </div>
+
+          <button type="button">Neue Erfahrungs-Variante</button>
+
+          <h2>Ausbildung</h2>
+
+          <div className="field">
+            <textarea placeholder="Ausbildung" />
+          </div>
+
+          <button type="button">Neue Ausbildungs-Variante</button>
+
+          {/* 🔽 NEU: DESIGN & LAYOUT */}
+          <h2>Design & Layout</h2>
+
+          <div className="field">
+            <label>Layout</label>
+            <select>
+              <option value="sidebar">Klassisch mit Seitenleiste</option>
+              <option value="modern">Modern & luftig</option>
+              <option value="clean">Schlicht & einspaltig</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Schriftart</label>
+            <select>
+              <option value="classic">Klassisch</option>
+              <option value="modern">Modern</option>
+              <option value="friendly">Freundlich</option>
+              <option value="tech">Technisch</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Akzentfarbe</label>
+            <select>
+              <option value="blue">Blau</option>
+              <option value="gray">Grau</option>
+              <option value="green">Grün</option>
+              <option value="burgundy">Bordeaux</option>
+              <option value="black">Schwarz</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Bewerbungsfoto</label>
+            <select>
+              <option value="yes">Mit Foto</option>
+              <option value="no">Ohne Foto</option>
+            </select>
+          </div>
+
+          {/* PRIMARY CTA */}
+          <div className="primary-cta">
+            <button
+              type="button"
+              className="cta-button"
+              onClick={handleCheckout}
+            >
+              PDF erstellen
+            </button>
+
+            <p className="cta-hint">
+              Kostenlos testen · Download im nächsten Schritt
+            </p>
+          </div>
+        </form>
+
+        {/* Vorschau */}
+        <aside className="preview-box">
+          <div className="preview-paper">
+            <div className="preview-name">Max Mustermann</div>
+            <div className="preview-title">Account Manager</div>
+          </div>
+
+          <p className="preview-hint">
+            Vorschau aktualisiert sich automatisch während der Eingabe.
+          </p>
+        </aside>
+      </div>
     </main>
   );
 }
