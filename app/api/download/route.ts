@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  // Dummy-PDF (nur zum Testen)
-  const pdfContent = `
+  const pdfText = `
 Lebenslauf – Testversion
 
 Name: Max Mustermann
-Beruf: Account Manager
+Position: Account Manager
 
-Dies ist eine Platzhalter-PDF.
+Dies ist eine Test-PDF.
 `;
 
-  const buffer = Buffer.from(pdfContent, 'utf-8');
+  const buffer = Buffer.from(pdfText, 'utf-8');
 
   return new NextResponse(buffer, {
     headers: {
