@@ -6,79 +6,69 @@ export async function GET(req: Request) {
   const raw = searchParams.get('data');
 
   if (!raw) {
-    return NextResponse.json({ error: 'Keine Daten erhalten' }, { status: 400 });
+    return NextResponse.json({ error: 'Keine Daten' }, { status: 400 });
   }
 
   const data = JSON.parse(decodeURIComponent(raw));
 
-  // --- Dokument & Seite ---
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595.28, 841.89]); // DIN A4
+  const page = pdfDoc.addPage([595.28, 841.89]);
   const width = page.getWidth();
 
-  // --- Schriften ---
-  const regular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  // Schriftwahl
+  const fontRegular =
+    data.font === 'serif'
+      ? await pdfDoc.embedFont(StandardFonts.TimesRoman)
+      : await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  // --- Farben ---
-  const textColor = rgb(0, 0, 0);
-  const muted = rgb(0.35, 0.35, 0.35);
-  const lineColor = rgb(0.8, 0.8, 0.8);
+  const fontBold =
+    data.font === 'serif'
+      ? await pdfDoc.embedFont(StandardFonts.TimesRomanBold)
+      : await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  // --- Layout ---
-  const marginX = 50;
-  let y = 790;
+  // Akzentfarbe
+  const accentColor =
+    data.accent === 'blue'
+      ? rgb(0.1, 0.3, 0.6)
+      : data.accent === 'gray'
+      ? rgb(0.4, 0.4, 0.4)
+      : rgb(0, 0, 0);
 
-  const drawLine = (gap = 18) => {
-    page.drawLine({
-      start: { x: marginX, y },
-      end: { x: width - marginX, y },
-      thickness: 1,
-      color: lineColor,
+  let y = 780;
+  const margin = 50;
+
+  const draw = (text: string, size = 12, bold = false, gap = 20) => {
+    if (!text) return;
+    page.drawText(text, {
+      x: margin,
+      y,
+      size,
+      font: bold ? fontBold : fontRegular,
+      color: bold ? accentColor : rgb(0, 0, 0),
+      maxWidth: width - margin * 2,
+      lineHeight: size * 1.4,
     });
     y -= gap;
   };
 
-  const drawText = (
-    text: string,
-    size = 11,
-    isBold = false,
-    color = textColor,
-    marginBottom = 16
-  ) => {
-    if (!text) return;
-    page.drawText(text, {
-      x: marginX,
-      y,
-      size,
-      font: isBold ? bold : regular,
-      color,
-      maxWidth: width - marginX * 2,
-      lineHeight: size * 1.4,
-    });
-    y -= marginBottom;
-  };
+  // Layout
+  if (data.layout === 'modern') {
+    draw(data.name, 24, true, 10);
+    draw(data.title, 14, false, 30);
+  } else {
+    draw(data.name, 20, true, 6);
+    draw(data.title, 12, false, 24);
+  }
 
-  // --- Kopf ---
-  drawText(data.name || 'Name', 22, true, textColor, 10);
-  drawText(data.title || 'Berufsbezeichnung', 13, false, muted, 24);
-  drawLine(26);
+  draw('Profil', 13, true, 10);
+  draw(data.profile, 11, false, 26);
 
-  // --- Profil ---
-  drawText('PROFIL', 12, true, muted, 10);
-  drawText(data.profile, 11, false, textColor, 24);
-  drawLine(26);
+  draw('Berufserfahrung', 13, true, 10);
+  draw(data.experience, 11, false, 26);
 
-  // --- Berufserfahrung ---
-  drawText('BERUFSERFAHRUNG', 12, true, muted, 10);
-  drawText(data.experience, 11, false, textColor, 28);
-  drawLine(26);
+  draw('Ausbildung', 13, true, 10);
+  draw(data.education, 11, false, 26);
 
-  // --- Ausbildung ---
-  drawText('AUSBILDUNG', 12, true, muted, 10);
-  drawText(data.education, 11, false, textColor, 28);
-
-  // --- PDF speichern ---
   const pdfBytes = await pdfDoc.save();
 
   return new NextResponse(Buffer.from(pdfBytes), {
