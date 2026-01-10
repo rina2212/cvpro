@@ -11,43 +11,74 @@ export async function GET(req: Request) {
 
   const data = JSON.parse(decodeURIComponent(raw));
 
+  // --- Dokument & Seite ---
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.28, 841.89]); // DIN A4
+  const width = page.getWidth();
 
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  // --- Schriften ---
+  const regular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  let y = 800;
+  // --- Farben ---
+  const textColor = rgb(0, 0, 0);
+  const muted = rgb(0.35, 0.35, 0.35);
+  const lineColor = rgb(0.8, 0.8, 0.8);
 
-  const draw = (
-    text: string,
-    size = 12,
-    isBold = false,
-    margin = 20
-  ) => {
-    page.drawText(text || '', {
-      x: 50,
-      y,
-      size,
-      font: isBold ? bold : font,
-      color: rgb(0, 0, 0),
-      maxWidth: 500,
+  // --- Layout ---
+  const marginX = 50;
+  let y = 790;
+
+  const drawLine = (gap = 18) => {
+    page.drawLine({
+      start: { x: marginX, y },
+      end: { x: width - marginX, y },
+      thickness: 1,
+      color: lineColor,
     });
-    y -= margin;
+    y -= gap;
   };
 
-  draw(data.name, 20, true, 30);
-  draw(data.title, 14, false, 30);
+  const drawText = (
+    text: string,
+    size = 11,
+    isBold = false,
+    color = textColor,
+    marginBottom = 16
+  ) => {
+    if (!text) return;
+    page.drawText(text, {
+      x: marginX,
+      y,
+      size,
+      font: isBold ? bold : regular,
+      color,
+      maxWidth: width - marginX * 2,
+      lineHeight: size * 1.4,
+    });
+    y -= marginBottom;
+  };
 
-  draw('Profil', 14, true, 20);
-  draw(data.profile, 12, false, 30);
+  // --- Kopf ---
+  drawText(data.name || 'Name', 22, true, textColor, 10);
+  drawText(data.title || 'Berufsbezeichnung', 13, false, muted, 24);
+  drawLine(26);
 
-  draw('Berufserfahrung', 14, true, 20);
-  draw(data.experience, 12, false, 40);
+  // --- Profil ---
+  drawText('PROFIL', 12, true, muted, 10);
+  drawText(data.profile, 11, false, textColor, 24);
+  drawLine(26);
 
-  draw('Ausbildung', 14, true, 20);
-  draw(data.education, 12, false, 30);
+  // --- Berufserfahrung ---
+  drawText('BERUFSERFAHRUNG', 12, true, muted, 10);
+  drawText(data.experience, 11, false, textColor, 28);
+  drawLine(26);
 
+  // --- Ausbildung ---
+  drawText('AUSBILDUNG', 12, true, muted, 10);
+  drawText(data.education, 11, false, textColor, 28);
+
+  // --- PDF speichern ---
   const pdfBytes = await pdfDoc.save();
 
   return new NextResponse(Buffer.from(pdfBytes), {
